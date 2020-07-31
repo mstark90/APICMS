@@ -1,0 +1,12 @@
+datasource:
+    url: jdbc:mysql://localhost:3306/apicms?serverTimezone=America/Chicago
+    userName: apicms
+    password: apicms
+
+storage:
+    baseFolder: /Users/michaelstark/apicms
+    
+spring:
+    servlet:
+        multipart:
+            max-file-size: 20971520
