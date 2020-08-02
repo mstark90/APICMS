@@ -49,6 +49,10 @@ public class AccessGrantService {
                 throw new UnauthorizedException();
             }
         }
+        
+        if(RequestUtil.getSessionToken() != null) {
+            throw new UnauthorizedException();
+        }
     }
 
     public boolean hasAdminAccess(String objectId) {

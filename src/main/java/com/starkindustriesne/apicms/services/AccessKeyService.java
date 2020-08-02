@@ -42,6 +42,10 @@ public class AccessKeyService {
                 throw new UnauthorizedException();
             }
         }
+        
+        if(RequestUtil.getSessionToken() != null) {
+            throw new UnauthorizedException();
+        }
     }
 
     public AccessKey create(CreateAccessKeyRequest request) {

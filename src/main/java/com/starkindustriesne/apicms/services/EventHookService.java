@@ -65,6 +65,10 @@ public class EventHookService {
             throw new BadRequestException();
         }
         
+        if(RequestUtil.getSessionToken() != null) {
+            throw new UnauthorizedException();
+        }
+        
         if (!this.accessGrantService.hasAdminAccess(request.getObjectId())) {
             throw new UnauthorizedException();
         }
@@ -100,6 +104,10 @@ public class EventHookService {
         if (!this.accessGrantService.hasAdminAccess(request.getObjectId())) {
             throw new UnauthorizedException();
         }
+        
+        if(RequestUtil.getSessionToken() != null) {
+            throw new UnauthorizedException();
+        }
 
         Optional<EventHook> eventHook
                 = this.eventHookRepository.findById(request.getEventHookId());
@@ -115,6 +123,10 @@ public class EventHookService {
 
     public List<EventHook> getEventsForObject(String objectId) {
         if (!this.accessGrantService.hasAdminAccess(objectId)) {
+            throw new UnauthorizedException();
+        }
+        
+        if(RequestUtil.getSessionToken() != null) {
             throw new UnauthorizedException();
         }
 
