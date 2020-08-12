@@ -17,7 +17,12 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DocumentRepository extends CrudRepository<Document, Long> {
+    @Override
+    List<Document> findAll();
+    
     Document findByObjectId(String objectId);
+    
+    List<Document> findByObjectIdIn(List<String> objectIds);
     
     List<Document> findByFolder(Folder folder);
 }

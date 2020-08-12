@@ -6,6 +6,7 @@
 package com.starkindustriesne.apicms.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -29,7 +30,7 @@ import javax.persistence.TemporalType;
 @Table(name="folders", indexes = {
     @Index(columnList="object_id", name="IDX_folder_object_id")
 })
-public class Folder {
+public class Folder implements Serializable {
     @Id
     @Column(name="folder_id")
     @GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -50,6 +50,8 @@ public class SecurityEngine {
             if (currentKey == null || !currentKey.getClientKey()
                     .equalsIgnoreCase(clientKey)) {
                 throw new UnauthorizedException();
+            } else {
+                
             }
         } else {
             currentKey = this.accessKeyRepository

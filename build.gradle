@@ -2,14 +2,66 @@ plugins {
     id 'org.springframework.boot' version '2.3.0.RELEASE'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'java'
+    id 'maven-publish'
 }
 
 group = 'com.starkindustriesne'
-version = '0.0.1-SNAPSHOT'
+version = '1.0-SNAPSHOT'
 sourceCompatibility = '11'
 
 repositories {
     mavenCentral()
+    
+    maven {
+        url "http://repo.starkhome.com/artifactory/libs-snapshot/"
+    }
+}
+
+configurations {
+   [apiElements, runtimeElements].each {
+       it.outgoing.artifacts.removeIf { it.buildDependencies.getDependencies(null).contains(jar) }
+       it.outgoing.artifact(bootJar)
+   }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'apicms'
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'APICMS'
+                description = 'A content management system for content-driven applications'
+                url = 'http://www.starkindustriesne.com/projects/apicms'
+                version = '1.0-SNAPSHOT'
+                
+                developers {
+                    developer {
+                        id = 'mstark'
+                        name = 'Michael Stark'
+                        email = 'michael.stark@starkindustriesne.com'
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username 'publisher'
+                password 'publisher'
+            }
+            url "http://repo.starkhome.com/artifactory/libs-snapshot/"
+        }
+    }
 }
 
 dependencies {
@@ -17,6 +69,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.apache.httpcomponents:httpclient:4.5'
+    implementation 'org.apache.lucene:lucene-core:8.6.0'
+    implementation 'org.apache.lucene:lucene-memory:8.6.0'
+    implementation 'org.apache.lucene:lucene-queryparser:8.6.0'
     implementation 'mysql:mysql-connector-java:8.0.20'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {

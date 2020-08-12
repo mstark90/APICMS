@@ -13,5 +13,6 @@ public enum EventType {
     READ,
     WRITE,
     CREATE,
+    UPLOAD_CONTENT,
     DELETE
 }

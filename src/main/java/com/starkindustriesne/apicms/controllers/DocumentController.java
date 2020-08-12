@@ -7,15 +7,19 @@ package com.starkindustriesne.apicms.controllers;
 
 import com.starkindustriesne.apicms.domain.AccessGrant;
 import com.starkindustriesne.apicms.dto.CreateAccessGrantRequest;
+import com.starkindustriesne.apicms.dto.CreateDocumentRequest;
 import com.starkindustriesne.apicms.dto.DocumentResponse;
+import com.starkindustriesne.apicms.dto.SearchRequest;
 import com.starkindustriesne.apicms.services.AccessGrantService;
 import com.starkindustriesne.apicms.services.DocumentService;
+import com.starkindustriesne.apicms.services.SearchEngine;
 import com.starkindustriesne.apicms.util.RequestUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,15 +41,33 @@ public class DocumentController {
     
     private final AccessGrantService accessGrantService;
     
+    private final SearchEngine searchEngine;
+    
     public DocumentController(DocumentService documentService,
-                              AccessGrantService accessGrantService) {
+                              AccessGrantService accessGrantService,
+                              SearchEngine searchEngine) {
         this.documentService = documentService;
         this.accessGrantService = accessGrantService;
+        this.searchEngine = searchEngine;
+    }
+    
+    @PostMapping("/query")
+    public List<DocumentResponse> query(@RequestBody SearchRequest request)
+        throws IOException, ParseException {
+        return this.searchEngine.queryDocuments(request);
     }
     
     @GetMapping("/{documentId}")
     public DocumentResponse get(@PathVariable String documentId) {
         return this.documentService.getByDocumentId(documentId);
+    }
+    
+    @PostMapping("/{documentId}")
+    public DocumentResponse update(@PathVariable String documentId,
+            @RequestBody CreateDocumentRequest request) {
+        request.setDocumentId(documentId);
+        
+        return this.documentService.modify(request);
     }
     
     @DeleteMapping("/{documentId}")

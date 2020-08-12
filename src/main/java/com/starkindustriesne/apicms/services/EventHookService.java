@@ -163,6 +163,10 @@ public class EventHookService {
     }
 
     public void triggerCreatedEvents(Document document) {
+        if(RequestUtil.getSessionToken() != null) {
+            return;
+        }
+        
         if (!this.accessGrantService.hasWriteAccess(document.getObjectId())) {
             throw new UnauthorizedException();
         }
@@ -173,8 +177,28 @@ public class EventHookService {
                     this.triggerEvent(document, eventHook);
                 });
     }
+    
+    public void triggerUploadContentEvents(Document document) {
+        if(RequestUtil.getSessionToken() != null) {
+            return;
+        }
+        
+        if (!this.accessGrantService.hasWriteAccess(document.getObjectId())) {
+            throw new UnauthorizedException();
+        }
+
+        this.eventHookRepository.findByParentObjectIdAndEventType(
+                document.getFolder().getObjectId(), EventType.UPLOAD_CONTENT)
+                .forEach(eventHook -> {
+                    this.triggerEvent(document, eventHook);
+                });
+    }
 
     public void triggerWriteEvents(Document document) {
+        if(RequestUtil.getSessionToken() != null) {
+            return;
+        }
+        
         if (!this.accessGrantService.hasWriteAccess(document.getObjectId())) {
             throw new UnauthorizedException();
         }
@@ -187,6 +211,10 @@ public class EventHookService {
     }
 
     public void triggerReadEvents(Document document) {
+        if(RequestUtil.getSessionToken() != null) {
+            return;
+        }
+        
         if (!this.accessGrantService.hasReadAccess(document.getObjectId())) {
             throw new UnauthorizedException();
         }
@@ -199,6 +227,10 @@ public class EventHookService {
     }
 
     public void triggerDeleteEvents(Document document) {
+        if(RequestUtil.getSessionToken() != null) {
+            return;
+        }
+        
         if (!this.accessGrantService.hasReadAccess(document.getObjectId())) {
             throw new UnauthorizedException();
         }

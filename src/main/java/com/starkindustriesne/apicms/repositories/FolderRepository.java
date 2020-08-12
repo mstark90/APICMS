@@ -16,9 +16,14 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface FolderRepository extends CrudRepository<Folder, Long> {
+    @Override
+    List<Folder> findAll();
+    
     Folder findByName(String name);
     
     Folder findByObjectId(String objectId);
+    
+    List<Folder> findByObjectIdIn(List<String> objectIds);
     
     List<Folder> findByParent(Folder parent);
 }

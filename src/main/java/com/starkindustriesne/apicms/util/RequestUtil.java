@@ -28,6 +28,7 @@ public class RequestUtil {
         return getRequest().getHeader("X-Client-Secret");
     }
     
+    
     public static String getSessionToken() {
         return getRequest().getHeader("X-Session-Token");
     }

@@ -46,6 +46,10 @@ public class FolderService {
         this.accessGrantService = accessGrantService;
         this.documentService = documentService;
     }
+    
+    private boolean hasReadAccess(Folder folder) {
+        return this.accessGrantService.hasReadAccess(folder.getObjectId());
+    }
 
     @Transactional
     public FolderResponse modify(CreateFolderRequest request) {
@@ -153,13 +157,21 @@ public class FolderService {
     }
 
     public List<FolderResponse> getAll() {
-        List<FolderResponse> folders = new ArrayList<>();
-        this.folderRepo.findAll()
-                .forEach(folder -> {
-                    folders.add(this.createFolderResponse(folder));
-                });
-
-        return folders;
+        return this.getAll(true);
+    }
+    
+    public List<FolderResponse> getAll(boolean validateAccess) {
+        return this.folderRepo.findAll().stream()
+                .filter(folder -> validateAccess ? this.hasReadAccess(folder) : true)
+                .map(this::createFolderResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public List<FolderResponse> getByFolderIds(List<String> folderIds) {
+        return this.folderRepo.findByObjectIdIn(folderIds).stream()
+                .filter(this::hasReadAccess)
+                .map(this::createFolderResponse)
+                .collect(Collectors.toList());
     }
 
     public List<FolderResponse> getChildFolders(String parentFolderId) {
@@ -174,16 +186,25 @@ public class FolderService {
         }
 
         return this.folderRepo.findByParent(folder).stream()
+                .filter(this::hasReadAccess)
                 .map(this::createFolderResponse)
                 .collect(Collectors.toList());
     }
 
     public FolderResponse getFolder(String objectId) {
+        if(!this.accessGrantService.hasReadAccess(objectId)) {
+            throw new UnauthorizedException();
+        }
+        
         return this.createFolderResponse(this.folderRepo
                 .findByObjectId(objectId));
     }
 
     private Iterable<FolderProperty> loadProperties(Folder folder, Map<String, String> props) {
+        if(props == null || props.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
         List<FolderProperty> properties = new ArrayList<>();
 
         props.forEach((key, value) -> {

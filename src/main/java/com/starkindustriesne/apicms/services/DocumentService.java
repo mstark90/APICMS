@@ -67,8 +67,29 @@ public class DocumentService {
         
         this.baseFolder = new File(baseFolder);
     }
+    
+    private boolean hasReadAccess(Document document) {
+        return this.accessGrantService.hasReadAccess(document.getObjectId()) ||
+                this.accessGrantService.hasReadAccess(document.getFolder()
+                        .getObjectId());
+    }
+    
+    public List<DocumentResponse> getAll() {
+        return this.getAll(true);
+    }
+    
+    public List<DocumentResponse> getAll(boolean validateAccess) {
+        return this.documentRepo.findAll().stream()
+                .filter(document -> validateAccess ? this.hasReadAccess(document) : true)
+                .map(this::createDocumentResponse)
+                .collect(Collectors.toList());
+    }
 
     public DocumentResponse getByDocumentId(String documentId) {
+        if(!this.accessGrantService.hasReadAccess(documentId)) {
+            throw new UnauthorizedException();
+        }
+        
         Document document = this.documentRepo.findByObjectId(documentId);
         
         if(document != null) {
@@ -76,6 +97,23 @@ public class DocumentService {
         }
 
         return this.createDocumentResponse(document);
+    }
+    
+    public List<DocumentResponse> getByDocumentIds(List<String> documentIds) {
+        return this.getByDocumentIds(documentIds, true);
+    }
+    
+    public List<DocumentResponse> getByDocumentIds(List<String> documentIds,
+            boolean triggerEvents) {
+        return this.documentRepo.findByObjectIdIn(documentIds).stream()
+                .filter(this::hasReadAccess)
+                .map(document -> {
+                    if(triggerEvents) {
+                        this.eventHookService.triggerReadEvents(document);
+                    }
+                    return this.createDocumentResponse(document);
+                })
+                .collect(Collectors.toList());
     }
 
     public List<DocumentResponse> getByFolder(String folderId) {
@@ -88,8 +126,7 @@ public class DocumentService {
         List<Document> documents = this.documentRepo.findByFolder(folder);
 
         return documents.stream()
-                .filter(document -> this.accessGrantService
-                .hasReadAccess(document.getObjectId()))
+                .filter(this::hasReadAccess)
                 .map(document -> {
                     return this.createDocumentResponse(document);
                 }).collect(Collectors.toList());
@@ -195,7 +232,7 @@ public class DocumentService {
             throw new APICMSException(e);
         }
         
-        this.eventHookService.triggerWriteEvents(document);
+        this.eventHookService.triggerUploadContentEvents(document);
 
         return this.createDocumentResponse(document);
     }
@@ -226,6 +263,10 @@ public class DocumentService {
     }
 
     private Iterable<DocumentProperty> loadProperties(Document document, Map<String, String> props) {
+        if(props == null || props.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
         List<DocumentProperty> properties = new ArrayList<>();
 
         props.forEach((key, value) -> {

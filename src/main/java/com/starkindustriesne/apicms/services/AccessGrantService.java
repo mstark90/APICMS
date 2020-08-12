@@ -44,8 +44,7 @@ public class AccessGrantService {
             AccessKey currentKey = this.accessKeyRepository
                     .findByClientKeyIgnoreCase(clientKey);
 
-            if (currentKey == null || !currentKey.getClientSecret()
-                    .equalsIgnoreCase(clientSecret) || !currentKey.isIsAdmin()) {
+            if (currentKey == null || !currentKey.isIsAdmin()) {
                 throw new UnauthorizedException();
             }
         }
@@ -84,12 +83,11 @@ public class AccessGrantService {
             Iterable<AccessGrantType> accessGrantTypes) {
         List<AccessGrant> grants = this.accessGrantRepository
                 .findByObjectIdIgnoreCaseAndClientKeyIgnoreCaseAndAccessGrantTypeIn(objectId,
-                        RequestUtil.getClientKey(), accessGrantTypes);
-        AccessKey key = this.accessKeyRepository.findByClientKeyIgnoreCase(
-                RequestUtil.getClientKey());
+                        clientKey, accessGrantTypes);
+        AccessKey key = this.accessKeyRepository.
+                findByClientKeyIgnoreCase(clientKey);
 
-        return key != null && key.getClientSecret().equalsIgnoreCase(
-                RequestUtil.getClientSecret()) && (!grants.isEmpty() || key.isIsAdmin());
+        return key != null && (!grants.isEmpty() || key.isIsAdmin());
     }
 
     public boolean hasAccess(String objectId, AccessGrantType accessGrantType) {

@@ -7,20 +7,22 @@ package com.starkindustriesne.apicms.controllers;
 
 import com.starkindustriesne.apicms.domain.AccessGrant;
 import com.starkindustriesne.apicms.domain.EventHook;
-import com.starkindustriesne.apicms.domain.Folder;
 import com.starkindustriesne.apicms.dto.CreateAccessGrantRequest;
 import com.starkindustriesne.apicms.dto.CreateDocumentRequest;
 import com.starkindustriesne.apicms.dto.CreateFolderRequest;
 import com.starkindustriesne.apicms.dto.DocumentResponse;
 import com.starkindustriesne.apicms.dto.FolderResponse;
 import com.starkindustriesne.apicms.dto.ModifyEventHookRequest;
+import com.starkindustriesne.apicms.dto.SearchRequest;
 import com.starkindustriesne.apicms.services.AccessGrantService;
 import com.starkindustriesne.apicms.services.DocumentService;
 import com.starkindustriesne.apicms.services.EventHookService;
 import com.starkindustriesne.apicms.services.FolderService;
+import com.starkindustriesne.apicms.services.SearchEngine;
 import com.starkindustriesne.apicms.util.RequestUtil;
 import java.io.IOException;
 import java.util.List;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,20 +42,29 @@ public class FolderController {
     private final DocumentService documentService;
     private final AccessGrantService accessGrantService;
     private final EventHookService eventHookService;
+    private final SearchEngine searchEngine;
     
     public FolderController(FolderService folderService,
                             DocumentService documentService,
                             AccessGrantService accessGrantService,
-                            EventHookService eventHookService) {
+                            EventHookService eventHookService,
+                            SearchEngine searchEngine) {
         this.folderService = folderService;
         this.documentService = documentService;
         this.accessGrantService = accessGrantService;
         this.eventHookService = eventHookService;
+        this.searchEngine = searchEngine;
     }
     
     @PostMapping
     public FolderResponse create(@RequestBody CreateFolderRequest request) {
         return this.folderService.modify(request);
+    }
+    
+    @PostMapping("/query")
+    public List<FolderResponse> query(@RequestBody SearchRequest request)
+        throws IOException, ParseException {
+        return this.searchEngine.queryFolders(request);
     }
     
     @GetMapping("/all")

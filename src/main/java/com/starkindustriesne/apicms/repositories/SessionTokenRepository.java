@@ -18,6 +18,6 @@ import org.springframework.stereotype.Repository;
 public interface SessionTokenRepository extends CrudRepository<SessionToken, Long> {
     SessionToken findBySessionToken(String sessionToken);
     
-    @Query("SELECT st FROM SessionToken st WHERE st.sessionToken = ?1 AND st.expiresAfter < NOW()")
+    @Query("SELECT st FROM SessionToken st WHERE st.sessionToken = ?1 AND st.expiresAfter > NOW()")
     SessionToken findValidSessionToken(String sessionToken);
 }
